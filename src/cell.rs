@@ -126,22 +126,25 @@ pub fn xy_from_cell(dim: &Dimension, extent: &Extent, cell: usize) -> (f64, f64)
 ///
 /// assert_eq!(cell_from_xy(&dim, &extent, 0.5, 2.5), Some(0));  // top-left
 /// assert_eq!(cell_from_xy(&dim, &extent, 3.5, 0.5), Some(11)); // bottom-right
-/// assert_eq!(cell_from_xy(&dim, &extent, -1.0, 0.0), None);    // outside
+/// assert_eq!(cell_from_xy(&dim, &extent, -1.0, 1.5), None);    // outside
 /// ```
 pub fn cell_from_xy(dim: &Dimension, extent: &Extent, x: f64, y: f64) -> Option<usize> {
-    let gt = geotransform::extent_dim_to_gt(extent, dim);
-    let col_f = geotransform::col_from_x(&gt, x);
-    let row_f = geotransform::row_from_y(&gt, y);
-
-    // Floor to integer indices
-    let col = col_f.floor() as i64;
-    let row = row_f.floor() as i64;
-
-    if col < 0 || col >= dim[0] as i64 || row < 0 || row >= dim[1] as i64 {
+    // All four boundary edges are included, matching R vaster / terra.
+    if x < extent[0] || x > extent[1] || y < extent[2] || y > extent[3] {
         return None;
     }
 
-    Some(row as usize * dim[0] + col as usize)
+    let x_res = (extent[1] - extent[0]) / dim[0] as f64;
+    let y_res = (extent[3] - extent[2]) / dim[1] as f64;
+
+    let col = ((x - extent[0]) / x_res) as usize;
+    let row = ((extent[3] - y) / y_res) as usize;
+
+    // Clamp to valid range (handles points exactly on xmax or ymin boundary)
+    let col = col.min(dim[0] - 1);
+    let row = row.min(dim[1] - 1);
+
+    Some(row * dim[0] + col)
 }
 
 /// X-coordinates of cell centres for each column.
@@ -252,10 +255,16 @@ mod tests {
     fn cell_from_xy_outside() {
         let dim = [10, 10];
         let extent = [0.0, 10.0, 0.0, 10.0];
+        // Outside
         assert_eq!(cell_from_xy(&dim, &extent, -0.1, 5.0), None);
         assert_eq!(cell_from_xy(&dim, &extent, 10.1, 5.0), None);
         assert_eq!(cell_from_xy(&dim, &extent, 5.0, -0.1), None);
         assert_eq!(cell_from_xy(&dim, &extent, 5.0, 10.1), None);
+        // All four boundaries are included (matches R vaster / terra)
+        assert!(cell_from_xy(&dim, &extent, 0.0, 5.0).is_some());   // xmin
+        assert!(cell_from_xy(&dim, &extent, 10.0, 5.0).is_some());  // xmax
+        assert!(cell_from_xy(&dim, &extent, 5.0, 0.0).is_some());   // ymin
+        assert!(cell_from_xy(&dim, &extent, 5.0, 10.0).is_some());  // ymax
     }
 
     #[test]

@@ -36,14 +36,16 @@ fn r_xy_from_cell_last() {
 }
 
 /// R: cell_from_xy(c(40, 36), c(-180, 180, -90, 90), cbind(0, 0))
-///  → 721
-/// (R cell 721 = Rust cell 720)
+///  → 741 (1-based) = 740 (0-based)
+/// col = ((0 - (-180)) / 9) as usize = 20
+/// row = ((90 - 0) / 5) as usize = 18
+/// cell = 18 * 40 + 20 = 740
 #[test]
 fn r_cell_from_xy_origin() {
     let dim = [40, 36];
     let extent = [-180.0, 180.0, -90.0, 90.0];
     let cell = cell_from_xy(&dim, &extent, 0.0, 0.0);
-    assert_eq!(cell, Some(720));
+    assert_eq!(cell, Some(740));
 }
 
 // ---------------------------------------------------------------------------
@@ -171,12 +173,21 @@ fn single_cell_grid() {
 
 #[test]
 fn cell_from_xy_on_boundary() {
-    // Point exactly on a cell boundary: x=1.0 in a grid with 1.0 resolution
-    // col_from_x: (1.0 - 0.0) / 1.0 - 0.5 = 0.5, floor(0.5) = 0
-    // So x=1.0 falls in column 0 (the left-side pixel "owns" its right edge)
+    // R: cell_from_xy(c(10, 10), c(0, 10, 0, 10), cbind(1.0, 9.5)) → 2 (1-based)
+    // x=1.0 is on the boundary between col 0 and col 1.
+    // col = ((1.0 - 0.0) / 1.0) as usize = 1 → Rust cell 1
     let dim = [10, 10];
     let extent = [0.0, 10.0, 0.0, 10.0];
-    assert_eq!(cell_from_xy(&dim, &extent, 1.0, 9.5), Some(0));
-    // x=1.5 is clearly in column 1
+    assert_eq!(cell_from_xy(&dim, &extent, 1.0, 9.5), Some(1));
     assert_eq!(cell_from_xy(&dim, &extent, 1.5, 9.5), Some(1));
+
+    // R boundary values from R vaster:
+    // cell_from_xy(c(10,10), c(0,10,0,10), cbind(0.0, 5.0))  → 51 (R) = 50
+    // cell_from_xy(c(10,10), c(0,10,0,10), cbind(10.0, 5.0)) → 60 (R) = 59
+    // cell_from_xy(c(10,10), c(0,10,0,10), cbind(5.0, 0.0))  → 96 (R) = 95
+    // cell_from_xy(c(10,10), c(0,10,0,10), cbind(5.0, 10.0)) → 6  (R) = 5
+    assert_eq!(cell_from_xy(&dim, &extent, 0.0, 5.0), Some(50));
+    assert_eq!(cell_from_xy(&dim, &extent, 10.0, 5.0), Some(59));
+    assert_eq!(cell_from_xy(&dim, &extent, 5.0, 0.0), Some(95));
+    assert_eq!(cell_from_xy(&dim, &extent, 5.0, 10.0), Some(5));
 }
