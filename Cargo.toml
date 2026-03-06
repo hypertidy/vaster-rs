@@ -10,7 +10,5 @@ documentation = "https://docs.rs/vaster"
 readme = "README.md"
 keywords = ["raster", "geotransform", "gdal", "geospatial", "grid"]
 categories = ["science::geo", "mathematics"]
-rust-version = "1.60"
-
+exclude = ["*.Rproj", ".Rproj.user",]
 [dependencies]
-# None! Pure arithmetic.

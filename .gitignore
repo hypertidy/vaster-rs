@@ -1,9 +1,10 @@
-.Rproj.user
+/target
+.cargo/
+Cargo.lock
+vaster-rs.Proj
+.Rproj.user/
 .Rhistory
 .Rdata
 .httr-oauth
 .DS_Store
 .quarto
-/target
-Cargo.lock
-
