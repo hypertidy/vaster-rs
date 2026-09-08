@@ -73,8 +73,8 @@ fn sentinel2_geotransform() {
     let extent = [499980.0, 609780.0, -4900020.0, -4790220.0];
     let dim = [10980, 10980];
     let gt = extent_dim_to_gt(&extent, &dim);
-    assert!((gt[1] - 10.0).abs() < 1e-10);        // 10m pixels
-    assert!((gt[5] - (-10.0)).abs() < 1e-10);      // north-up
+    assert!((gt[1] - 10.0).abs() < 1e-10); // 10m pixels
+    assert!((gt[5] - (-10.0)).abs() < 1e-10); // north-up
     assert!((gt[0] - 499980.0).abs() < 1e-10);
     assert!((gt[3] - (-4790220.0)).abs() < 1e-10); // ymax
 }
@@ -86,7 +86,10 @@ fn sentinel2_geotransform() {
 /// Inversion should roundtrip through geo coordinates.
 #[test]
 fn inv_geotransform_roundtrip_through_coords() {
-    let gt = extent_dim_to_gt(&[499980.0, 609780.0, -4900020.0, -4790220.0], &[10980, 10980]);
+    let gt = extent_dim_to_gt(
+        &[499980.0, 609780.0, -4900020.0, -4790220.0],
+        &[10980, 10980],
+    );
     let inv = inv_geotransform(&gt).unwrap();
 
     // Pixel (5434, 2646) centre
@@ -149,11 +152,11 @@ fn world_file_global_1deg() {
     let gt = extent_dim_to_gt(&[-180.0, 180.0, -90.0, 90.0], &[360, 180]);
     let wf = geotransform_to_world(&gt);
     // x_res, y_skew, x_skew, y_res, x_centre, y_centre
-    assert!((wf[0] - 1.0).abs() < 1e-10);       // x_res
-    assert!((wf[1] - 0.0).abs() < 1e-10);       // no skew
-    assert!((wf[2] - 0.0).abs() < 1e-10);       // no skew
-    assert!((wf[3] - (-1.0)).abs() < 1e-10);     // y_res (negative)
-    assert!((wf[4] - (-179.5)).abs() < 1e-10);   // centre of top-left pixel
+    assert!((wf[0] - 1.0).abs() < 1e-10); // x_res
+    assert!((wf[1] - 0.0).abs() < 1e-10); // no skew
+    assert!((wf[2] - 0.0).abs() < 1e-10); // no skew
+    assert!((wf[3] - (-1.0)).abs() < 1e-10); // y_res (negative)
+    assert!((wf[4] - (-179.5)).abs() < 1e-10); // centre of top-left pixel
     assert!((wf[5] - 89.5).abs() < 1e-10);
 }
 

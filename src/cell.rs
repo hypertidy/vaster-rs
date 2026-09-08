@@ -202,9 +202,7 @@ pub fn y_centre(dim: &Dimension, extent: &Extent) -> Vec<f64> {
 /// ```
 pub fn x_corner(dim: &Dimension, extent: &Extent) -> Vec<f64> {
     let res = geotransform::x_res(dim, extent);
-    (0..=dim[0])
-        .map(|i| extent[0] + i as f64 * res)
-        .collect()
+    (0..=dim[0]).map(|i| extent[0] + i as f64 * res).collect()
 }
 
 /// Y-coordinates of cell edges (corners) for each row boundary.
@@ -222,9 +220,7 @@ pub fn x_corner(dim: &Dimension, extent: &Extent) -> Vec<f64> {
 /// ```
 pub fn y_corner(dim: &Dimension, extent: &Extent) -> Vec<f64> {
     let res = geotransform::y_res(dim, extent);
-    (0..=dim[1])
-        .map(|i| extent[3] - i as f64 * res)
-        .collect()
+    (0..=dim[1]).map(|i| extent[3] - i as f64 * res).collect()
 }
 
 #[cfg(test)]
@@ -261,10 +257,10 @@ mod tests {
         assert_eq!(cell_from_xy(&dim, &extent, 5.0, -0.1), None);
         assert_eq!(cell_from_xy(&dim, &extent, 5.0, 10.1), None);
         // All four boundaries are included (matches R vaster / terra)
-        assert!(cell_from_xy(&dim, &extent, 0.0, 5.0).is_some());   // xmin
-        assert!(cell_from_xy(&dim, &extent, 10.0, 5.0).is_some());  // xmax
-        assert!(cell_from_xy(&dim, &extent, 5.0, 0.0).is_some());   // ymin
-        assert!(cell_from_xy(&dim, &extent, 5.0, 10.0).is_some());  // ymax
+        assert!(cell_from_xy(&dim, &extent, 0.0, 5.0).is_some()); // xmin
+        assert!(cell_from_xy(&dim, &extent, 10.0, 5.0).is_some()); // xmax
+        assert!(cell_from_xy(&dim, &extent, 5.0, 0.0).is_some()); // ymin
+        assert!(cell_from_xy(&dim, &extent, 5.0, 10.0).is_some()); // ymax
     }
 
     #[test]

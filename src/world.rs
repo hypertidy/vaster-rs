@@ -41,11 +41,11 @@ pub type WorldFile = [f64; 6];
 pub fn world_to_geotransform(wf: &WorldFile) -> GeoTransform {
     [
         wf[4] - wf[0] / 2.0 - wf[2] / 2.0, // x_origin = x_centre - x_res/2 - x_skew/2
-        wf[0],                                // x_res
-        wf[2],                                // x_skew (row rotation)
+        wf[0],                             // x_res
+        wf[2],                             // x_skew (row rotation)
         wf[5] - wf[3] / 2.0 - wf[1] / 2.0, // y_origin = y_centre - y_res/2 - y_skew/2
-        wf[1],                                // y_skew (col rotation)
-        wf[3],                                // y_res
+        wf[1],                             // y_skew (col rotation)
+        wf[3],                             // y_res
     ]
 }
 
@@ -64,10 +64,10 @@ pub fn world_to_geotransform(wf: &WorldFile) -> GeoTransform {
 /// ```
 pub fn geotransform_to_world(gt: &GeoTransform) -> WorldFile {
     [
-        gt[1],                                // x_res
-        gt[4],                                // y_skew
-        gt[2],                                // x_skew
-        gt[5],                                // y_res
+        gt[1],                             // x_res
+        gt[4],                             // y_skew
+        gt[2],                             // x_skew
+        gt[5],                             // y_res
         gt[0] + gt[1] / 2.0 + gt[2] / 2.0, // x_centre = x_origin + x_res/2 + x_skew/2
         gt[3] + gt[5] / 2.0 + gt[4] / 2.0, // y_centre = y_origin + y_res/2 + y_skew/2
     ]
@@ -102,7 +102,7 @@ mod tests {
         // Non-rotated: world file x,y should be centre of top-left pixel
         let gt = [0.0, 10.0, 0.0, 100.0, 0.0, -10.0];
         let wf = geotransform_to_world(&gt);
-        assert!((wf[4] - 5.0).abs() < 1e-10);   // x_centre = 0 + 10/2
-        assert!((wf[5] - 95.0).abs() < 1e-10);  // y_centre = 100 + (-10)/2
+        assert!((wf[4] - 5.0).abs() < 1e-10); // x_centre = 0 + 10/2
+        assert!((wf[5] - 95.0).abs() < 1e-10); // y_centre = 100 + (-10)/2
     }
 }

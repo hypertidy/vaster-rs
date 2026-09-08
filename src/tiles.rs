@@ -49,17 +49,32 @@ impl TileScheme {
     pub fn new(crs: impl Into<String>, origin: [f64; 2], size0: f64, tile: usize) -> Self {
         assert!(size0 > 0.0, "size0 must be positive");
         assert!(tile > 0, "tile size must be positive");
-        Self { crs: crs.into(), origin, size0, tile }
+        Self {
+            crs: crs.into(),
+            origin,
+            size0,
+            tile,
+        }
     }
 
     /// A scheme from the zoom-0 pixel resolution rather than tile size.
-    pub fn from_resolution(crs: impl Into<String>, origin: [f64; 2], res0: f64, tile: usize) -> Self {
+    pub fn from_resolution(
+        crs: impl Into<String>,
+        origin: [f64; 2],
+        res0: f64,
+        tile: usize,
+    ) -> Self {
         Self::new(crs, origin, res0 * tile as f64, tile)
     }
 
     /// The standard Web Mercator scheme (`EPSG:3857`, 256 px tiles).
     pub fn web_mercator() -> Self {
-        Self::new("EPSG:3857", [-WEBMERC_HALF, WEBMERC_HALF], 2.0 * WEBMERC_HALF, 256)
+        Self::new(
+            "EPSG:3857",
+            [-WEBMERC_HALF, WEBMERC_HALF],
+            2.0 * WEBMERC_HALF,
+            256,
+        )
     }
 
     /// Side length of a tile at zoom `z`, in CRS units.
@@ -119,14 +134,21 @@ impl TileScheme {
 
     /// The tile one zoom level up that contains `(z, x, y)`.
     pub fn parent(&self, z: u32, x: i64, y: i64) -> Option<(u32, i64, i64)> {
-        if z == 0 { return None; }
+        if z == 0 {
+            return None;
+        }
         Some((z - 1, x.div_euclid(2), y.div_euclid(2)))
     }
 
     /// The four tiles at `z + 1` that make up `(z, x, y)`, row-major.
     pub fn children(&self, z: u32, x: i64, y: i64) -> [(u32, i64, i64); 4] {
         let (z1, x1, y1) = (z + 1, x * 2, y * 2);
-        [(z1, x1, y1), (z1, x1 + 1, y1), (z1, x1, y1 + 1), (z1, x1 + 1, y1 + 1)]
+        [
+            (z1, x1, y1),
+            (z1, x1 + 1, y1),
+            (z1, x1, y1 + 1),
+            (z1, x1 + 1, y1 + 1),
+        ]
     }
 
     /// Zoom level whose resolution is closest (in log2) to `res`.
@@ -144,7 +166,10 @@ impl TileScheme {
     /// joined, suitable as the `scheme` part of a cache key. Not a hash;
     /// two schemes with the same parameters give the same string.
     pub fn id(&self) -> String {
-        format!("{}|{:.6}|{:.6}|{:.6}|{}", self.crs, self.origin[0], self.origin[1], self.size0, self.tile)
+        format!(
+            "{}|{:.6}|{:.6}|{:.6}|{}",
+            self.crs, self.origin[0], self.origin[1], self.size0, self.tile
+        )
     }
 
     /// OGC TileMatrixSet 2.0 JSON for zoom levels `0..=zmax`, bounded to
@@ -154,7 +179,13 @@ impl TileScheme {
     /// `metres_per_unit` converts CRS units to metres for the scale
     /// denominator (1.0 for metric CRSs; about 111319.49 for degrees), using
     /// the OGC 0.28 mm standard pixel.
-    pub fn tile_matrix_set_json(&self, id: &str, zmax: u32, extent: Option<&Extent>, metres_per_unit: f64) -> String {
+    pub fn tile_matrix_set_json(
+        &self,
+        id: &str,
+        zmax: u32,
+        extent: Option<&Extent>,
+        metres_per_unit: f64,
+    ) -> String {
         let mut out = String::new();
         out.push_str("{\n");
         out.push_str(&format!("  \"id\": \"{}\",\n", esc(id)));
@@ -203,7 +234,9 @@ fn esc(s: &str) -> String {
 mod tests {
     use super::*;
 
-    fn close(a: f64, b: f64, tol: f64) -> bool { (a - b).abs() <= tol }
+    fn close(a: f64, b: f64, tol: f64) -> bool {
+        (a - b).abs() <= tol
+    }
 
     #[test]
     fn web_mercator_matches_known_tiles() {
@@ -213,7 +246,9 @@ mod tests {
         assert!(close(e[0], -WEBMERC_HALF, 1e-6) && close(e[1], WEBMERC_HALF, 1e-6));
         // Zoom 1, tile (1,1) is the south-east quadrant.
         let e = s.extent(1, 1, 1);
-        assert!(close(e[0], 0.0, 1e-6) && close(e[3], 0.0, 1e-6) && close(e[1], WEBMERC_HALF, 1e-6));
+        assert!(
+            close(e[0], 0.0, 1e-6) && close(e[3], 0.0, 1e-6) && close(e[1], WEBMERC_HALF, 1e-6)
+        );
         // Standard resolution table: z0 156543.03 m/px, z10 152.87 m/px.
         assert!(close(s.resolution(0), 156543.03392804097, 1e-6));
         assert!(close(s.resolution(10), 152.8740565703525, 1e-6));
@@ -224,7 +259,12 @@ mod tests {
 
     #[test]
     fn geotransform_agrees_with_extent() {
-        let s = TileScheme::new("+proj=laea +lat_0=-42 +lon_0=147", [26_700.0, -98_000.0], 524_288.0, 256);
+        let s = TileScheme::new(
+            "+proj=laea +lat_0=-42 +lon_0=147",
+            [26_700.0, -98_000.0],
+            524_288.0,
+            256,
+        );
         for &(z, x, y) in &[(0u32, 0i64, 0i64), (3, -2, 5), (7, 100, -33)] {
             let gt = s.geotransform(z, x, y);
             let e = s.extent(z, x, y);
@@ -262,11 +302,20 @@ mod tests {
     fn tiles_in_extent_respects_boundaries() {
         let s = TileScheme::new("EPSG:3857", [0.0, 0.0], 1000.0, 10);
         // Exactly one zoom-2 tile (250 units) starting at the origin.
-        assert_eq!(s.tiles_in_extent(2, &[0.0, 250.0, -250.0, 0.0]), [0, 0, 0, 0]);
+        assert_eq!(
+            s.tiles_in_extent(2, &[0.0, 250.0, -250.0, 0.0]),
+            [0, 0, 0, 0]
+        );
         // A hair over the edge pulls in the neighbour.
-        assert_eq!(s.tiles_in_extent(2, &[0.0, 250.001, -250.0, 0.0]), [0, 1, 0, 0]);
+        assert_eq!(
+            s.tiles_in_extent(2, &[0.0, 250.001, -250.0, 0.0]),
+            [0, 1, 0, 0]
+        );
         // Straddling the origin: negative indices.
-        assert_eq!(s.tiles_in_extent(2, &[-100.0, 100.0, -100.0, 100.0]), [-1, 0, -1, 0]);
+        assert_eq!(
+            s.tiles_in_extent(2, &[-100.0, 100.0, -100.0, 100.0]),
+            [-1, 0, -1, 0]
+        );
     }
 
     #[test]
