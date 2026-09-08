@@ -52,6 +52,12 @@
 //! assert_eq!(cell, Some(10 + 44 * 360));
 //! ```
 //!
+//! ## Tile schemes
+//!
+//! [`TileScheme`] describes a quadtree of square tiles from four numbers
+//! (CRS, origin, zoom-0 size, tile pixels) and derives tile geotransforms,
+//! extents, containment and an OGC TileMatrixSet document.
+//!
 //! ## Relationship to the R package
 //!
 //! This crate is the Rust equivalent of [hypertidy/vaster](https://github.com/hypertidy/vaster),
@@ -61,11 +67,13 @@
 mod cell;
 mod crop;
 mod geotransform;
+mod tiles;
 mod world;
 
 pub use cell::*;
 pub use crop::*;
 pub use geotransform::*;
+pub use tiles::*;
 pub use world::*;
 
 /// A GDAL-style affine geotransform.
