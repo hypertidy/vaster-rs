@@ -20,6 +20,10 @@ jobs:
       - run: cargo clippy -- -D warnings
       - run: cargo fmt --check
       - run: cargo doc --no-deps
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook@0.4.52
+      - run: cargo build --target-dir target/book && mdbook test book -L target/book/debug/deps
 
   msrv:
     runs-on: ubuntu-latest

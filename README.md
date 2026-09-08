@@ -4,6 +4,8 @@
 [![docs.rs](https://docs.rs/vaster/badge.svg)](https://docs.rs/vaster)
 [![crates.io](https://img.shields.io/crates/v/vaster.svg)](https://crates.io/crates/vaster)
 
+**Guide:** <https://hypertidy.github.io/vaster-rs/> | **API:** <https://docs.rs/vaster>
+
 Raster grid logic, without any pesky data.
 
 Raster grids are defined by **dimension** (ncol, nrow) and **extent** (xmin, xmax, ymin, ymax). Everything else — resolution, cell centres, geotransforms, cell indexing — derives from those six numbers. 

@@ -1,0 +1,54 @@
+name: book
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "book/**"
+      - "src/**"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - ".github/workflows/book.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook@0.4.52
+      - name: Build the crate so the book's examples can link against it
+        run: cargo build --target-dir target/book
+      - name: Run every Rust block in the book
+        run: mdbook test book -L target/book/debug/deps
+      - name: Build the book
+        run: mdbook build book
+      - name: Build the API reference into the book at /api
+        run: |
+          cargo doc --no-deps
+          cp -r target/doc book/book/api
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: book/book
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
